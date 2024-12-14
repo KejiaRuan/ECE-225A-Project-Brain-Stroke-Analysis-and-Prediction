@@ -179,16 +179,14 @@ print(f"\nThe Accuracy of K Nearest Neighbors Classifier is {knn_acc} %")
 
 ##Model7: Neural Network Architecture
 x = data.drop(["Stroke"],axis =1)
-# 将非数值列转换为独热编码
 x = pd.get_dummies(x, columns=x.select_dtypes(include='object').columns)
 
-# 标准化数值特征
 sc = StandardScaler()
 x = sc.fit_transform(x)
 y=data["Stroke"].map({"No": 0, "Yes": 1}).astype(int)
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-x_train = sc.fit_transform(x_train)  # 只在训练数据上拟合
+x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
 regularization_parameter = 0.003
