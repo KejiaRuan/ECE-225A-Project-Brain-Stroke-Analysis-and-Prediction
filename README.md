@@ -7,15 +7,21 @@ Data:
 - ever_married, work_type, residence_type
 - stroke (0 or 1)
 
-TODO:
-1. 对每个性状与是否中风的影响画图 - 条形图、饼图等
-2. 显著性分析 - 某个性状对中风是否有影响
-3. correlation map
-4. 分类模型训练与准确度对比 - Naive Bayes (Bernoulli & Gaussian), Logistic Regression, K-Nearest Neighbor, Random Forest, Support Vector Machine)
+Tasks:
+1. Analyze and visualize the impact of each feature on stroke rate - Use bar charts, pie charts, histgrams, etc.
+2. Significance test - Determine whether a specific feature has a significant relationship with stroke occurence.
+3. Correlation map - Explore relationships between all features.
+4. Train classification models and compare accuracy, recall, and f1-score
+    - Naive Bayes (Bernoulli & Gaussian)
+    - Logistic Regression
+    - K-Nearest Neighbor
+    - Random Forest
+    - Support Vector Machine
+    - Neural Network
 
-Report: （找双列的报告模板）
+Report: (two-columns)
 1. Background
 2. Dataset Discription
 3. Data Analysis and Visualization
-4. Model Training and Evaluation （每个模型放公式）
+4. Model Training and Evaluation (mathematical formulas)
 5. Conclusion
