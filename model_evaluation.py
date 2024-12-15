@@ -5,18 +5,18 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import GaussianNB
-from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import GaussianNB, BernoulliNB
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-import tensorflow as tf
 from keras import Sequential
 from keras import regularizers
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
+from imblearn.over_sampling import SMOTE
+import tensorflow as tf
 
 # Load the dataset
 data = pd.read_csv("healthcare-dataset-stroke-data.csv")
@@ -91,93 +91,89 @@ print(data.describe(include="object").T)
 x = data.drop(["Stroke"], axis=1)  # Features
 y = data["Stroke"]  # Target variable
 
-
 feature_names = x.columns
 
 x = pd.get_dummies(x, columns=x.select_dtypes(include='object').columns)
 sc = StandardScaler()
 x = sc.fit_transform(x)
 
-
+# Split the dataset into train and test sets
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
+# Resample the data using SMOTE
+smote = SMOTE(sampling_strategy='auto', random_state=42)
+x_train_smote, y_train_smote = smote.fit_resample(x_train, y_train)
 
-print(f"Shape of training data : {x_train.shape}, {y_train.shape}")
-print(f"Shape of testing data : {x_test.shape}, {y_test.shape}")
+print(f"Original training data shape: {x_train.shape}, {y_train.shape}")
+print(f"Resampled training data shape: {x_train_smote.shape}, {y_train_smote.shape}")
 
-
-##Model1: Logistic regression model
-lr = LogisticRegression()
-lr.fit(x_train, y_train)
+# Model 1: Logistic Regression with class weights
+lr = LogisticRegression(class_weight='balanced')
+lr.fit(x_train_smote, y_train_smote)
 lr_pred = lr.predict(x_test)
 lr_conf = confusion_matrix(y_test, lr_pred)
 lr_report = classification_report(y_test, lr_pred)
-lr_acc = round(accuracy_score(y_test, lr_pred)*100, ndigits = 2)
-print(f"Confusion Matrix : \n\n{lr_conf}")
-print(f"\nClassification Report : \n\n{lr_report}")
-print(f"\nThe Accuracy of Logistic Regression is {lr_acc} %")
+lr_acc = round(accuracy_score(y_test, lr_pred) * 100, 2)
+print(f"Logistic Regression Confusion Matrix:\n{lr_conf}")
+print(f"Logistic Regression Classification Report:\n{lr_report}")
+print(f"Logistic Regression Accuracy: {lr_acc}%")
 
-
-##Model2: Gaussian Naive Bayes
+# Model 2: Gaussian Naive Bayes
 gnb = GaussianNB()
-gnb.fit(x_train, y_train)
+gnb.fit(x_train_smote, y_train_smote)
 gnb_pred = gnb.predict(x_test)
 gnb_conf = confusion_matrix(y_test, gnb_pred)
 gnb_report = classification_report(y_test, gnb_pred)
-gnb_acc = round(accuracy_score(y_test, gnb_pred)*100, ndigits = 2)
-print(f"Confusion Matrix : \n\n{gnb_conf}")
-print(f"\nClassification Report : \n\n{gnb_report}")
-print(f"\nThe Accuracy of Gaussian Naive Bayes is {gnb_acc} %")
+gnb_acc = round(accuracy_score(y_test, gnb_pred) * 100, 2)
+print(f"Gaussian Naive Bayes Confusion Matrix:\n{gnb_conf}")
+print(f"Gaussian Naive Bayes Classification Report:\n{gnb_report}")
+print(f"Gaussian Naive Bayes Accuracy: {gnb_acc}%")
 
-
-##Model3: Bernoulli Naive Bayes
+# Model 3: Bernoulli Naive Bayes
 bnb = BernoulliNB()
-bnb.fit(x_train, y_train)
+bnb.fit(x_train_smote, y_train_smote)
 bnb_pred = bnb.predict(x_test)
 bnb_conf = confusion_matrix(y_test, bnb_pred)
 bnb_report = classification_report(y_test, bnb_pred)
-bnb_acc = round(accuracy_score(y_test, bnb_pred)*100, ndigits = 2)
-print(f"Confusion Matrix : \n\n{bnb_conf}")
-print(f"\nClassification Report : \n\n{bnb_report}")
-print(f"\nThe Accuracy of Bernoulli Naive Bayes is {bnb_acc} %")
+bnb_acc = round(accuracy_score(y_test, bnb_pred) * 100, 2)
+print(f"Bernoulli Naive Bayes Confusion Matrix:\n{bnb_conf}")
+print(f"Bernoulli Naive Bayes Classification Report:\n{bnb_report}")
+print(f"Bernoulli Naive Bayes Accuracy: {bnb_acc}%")
 
-
-
-##Model4: Support vector machine
-svm = SVC(C = 100, gamma = 0.002)
-svm.fit(x_train, y_train)
+# Model 4: Support Vector Machine with class weights
+svm = SVC(C=100, gamma=0.002, class_weight='balanced')
+svm.fit(x_train_smote, y_train_smote)
 svm_pred = svm.predict(x_test)
 svm_conf = confusion_matrix(y_test, svm_pred)
 svm_report = classification_report(y_test, svm_pred)
-svm_acc = round(accuracy_score(y_test, svm_pred)*100, ndigits = 2)
-print(f"Confusion Matrix : \n\n{svm_conf}")
-print(f"\nClassification Report : \n\n{svm_report}")
-print(f"\nThe Accuracy of Support Vector Machine is {svm_acc} %")
+svm_acc = round(accuracy_score(y_test, svm_pred) * 100, 2)
+print(f"SVM Confusion Matrix:\n{svm_conf}")
+print(f"SVM Classification Report:\n{svm_report}")
+print(f"SVM Accuracy: {svm_acc}%")
 
-
-##Model5: Random Forest:
-rfg = RandomForestClassifier(n_estimators = 100, random_state = 42)
-rfg.fit(x_train, y_train)
+# Model 5: Random Forest with class weights
+rfg = RandomForestClassifier(n_estimators=100, random_state=42, class_weight='balanced')
+rfg.fit(x_train_smote, y_train_smote)
 rfg_pred = rfg.predict(x_test)
 rfg_conf = confusion_matrix(y_test, rfg_pred)
 rfg_report = classification_report(y_test, rfg_pred)
-rfg_acc = round(accuracy_score(y_test, rfg_pred)*100, ndigits = 2)
-print(f"Confusion Matrix : \n\n{rfg_conf}")
-print(f"\nClassification Report : \n\n{rfg_report}")
-print(f"\nThe Accuracy of Random Forest Classifier is {rfg_acc} %")
+rfg_acc = round(accuracy_score(y_test, rfg_pred) * 100, 2)
+print(f"Random Forest Confusion Matrix:\n{rfg_conf}")
+print(f"Random Forest Classification Report:\n{rfg_report}")
+print(f"Random Forest Accuracy: {rfg_acc}%")
 
-##Model6: K nearest neighbors
+# Model 6: K Nearest Neighbors
 knn = KNeighborsClassifier(n_neighbors=2)
-knn.fit(x_train, y_train)
+knn.fit(x_train_smote, y_train_smote)
 knn_pred = knn.predict(x_test)
 knn_conf = confusion_matrix(y_test, knn_pred)
 knn_report = classification_report(y_test, knn_pred)
-knn_acc = round(accuracy_score(y_test, knn_pred)*100, ndigits = 2)
-print(f"Confusion Matrix : \n\n{knn_conf}")
-print(f"\nClassification Report : \n\n{knn_report}")
-print(f"\nThe Accuracy of K Nearest Neighbors Classifier is {knn_acc} %")
+knn_acc = round(accuracy_score(y_test, knn_pred) * 100, 2)
+print(f"KNN Confusion Matrix:\n{knn_conf}")
+print(f"KNN Classification Report:\n{knn_report}")
+print(f"KNN Accuracy: {knn_acc}%")
 
-##Model7: Neural Network Architecture
+# Model 7: Neural Network
 x = data.drop(["Stroke"],axis =1)
 x = pd.get_dummies(x, columns=x.select_dtypes(include='object').columns)
 
@@ -187,6 +183,8 @@ y=data["Stroke"].map({"No": 0, "Yes": 1}).astype(int)
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 x_train = sc.fit_transform(x_train)
+smote = SMOTE(sampling_strategy='auto', random_state=42)
+x_train, y_train = smote.fit_resample(x_train, y_train)
 x_test = sc.transform(x_test)
 
 regularization_parameter = 0.003
